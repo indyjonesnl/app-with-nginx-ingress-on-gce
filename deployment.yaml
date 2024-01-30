@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-awesome-app
+  namespace: production
+  labels:
+    app.kubernetes.io/name: my-awesome-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: my-awesome-app
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: my-awesome-app
+    spec:
+      hostIPC: false
+      hostPID: false
+      hostNetwork: false
+      containers:
+        - name: nginx
+          image: nginx-unprivileged:stable-alpine
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp-dir
+          ports:
+            - containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101 # nginx uid
+        runAsGroup: 101 # nginx gid
+        fsGroup: 101 # nginx gid
+        seccompProfile:
+          type: RuntimeDefault
+      volumes:
+        - emptyDir: {}
+          name: tmp-dir
