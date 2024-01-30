@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-awesome-app
+  namespace: release
+  annotations:
+    acme.cert-manager.io/http01-edit-in-place: 'true'
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - awesome-app.com
+      secretName: my-awesome-app-tls
+  rules:
+    - host: awesome-app.com
+      http:
+        paths:
+          - backend:
+              service:
+                name: my-awesome-app
+                port:
+                  number: 8080
+            path: /
+            pathType: Prefix
+
